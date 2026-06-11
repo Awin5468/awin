@@ -1,0 +1,2917 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>2026 世界杯小组赛预测器</title>
+  <style>
+    :root {
+      --bg:#07111f;
+      --panel:#0d1b2f;
+      --panel2:#10243e;
+      --card:#132842;
+      --line:rgba(255,255,255,.10);
+      --text:#f3f7ff;
+      --muted:#a9b8cc;
+      --good:#22c55e;
+      --warn:#f59e0b;
+      --bad:#ef4444;
+      --blue:#38bdf8;
+      --purple:#a78bfa;
+      --shadow:0 14px 30px rgba(0,0,0,.28);
+      --radius:18px;
+    }
+    * { box-sizing:border-box; }
+    body {
+      margin:0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+      background:
+        radial-gradient(circle at 10% 0%, rgba(56,189,248,.20), transparent 28%),
+        radial-gradient(circle at 90% 10%, rgba(167,139,250,.16), transparent 30%),
+        var(--bg);
+      color:var(--text);
+      line-height:1.55;
+    }
+    .app {
+      width:min(1120px,100%);
+      margin:0 auto;
+      padding:16px 12px 88px;
+    }
+    .hero {
+      position:sticky;
+      top:0;
+      z-index:10;
+      margin:-16px -12px 14px;
+      padding:18px 12px 14px;
+      backdrop-filter: blur(18px);
+      background:linear-gradient(180deg, rgba(7,17,31,.96), rgba(7,17,31,.82));
+      border-bottom:1px solid var(--line);
+    }
+    .hero-inner {
+      width:min(1120px,100%);
+      margin:0 auto;
+    }
+    h1 {
+      font-size:24px;
+      margin:0 0 6px;
+      letter-spacing:.2px;
+    }
+    .sub {
+      color:var(--muted);
+      font-size:13px;
+      margin:0;
+    }
+    .stats {
+      display:grid;
+      grid-template-columns: repeat(4,1fr);
+      gap:8px;
+      margin-top:14px;
+    }
+    .stat {
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:10px 8px;
+      min-height:64px;
+    }
+    .stat b {
+      display:block;
+      font-size:20px;
+      line-height:1.05;
+    }
+    .stat span {
+      display:block;
+      margin-top:4px;
+      font-size:11px;
+      color:var(--muted);
+    }
+    .tabs, .controls {
+      display:flex;
+      gap:8px;
+      overflow-x:auto;
+      padding-bottom:4px;
+      scrollbar-width:none;
+    }
+    .tabs::-webkit-scrollbar, .controls::-webkit-scrollbar { display:none; }
+    .tab, .chip, button, select, input, textarea {
+      font:inherit;
+    }
+    .tab, .chip, button {
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.06);
+      color:var(--text);
+      border-radius:999px;
+      padding:9px 12px;
+      white-space:nowrap;
+      cursor:pointer;
+      touch-action:manipulation;
+    }
+    .tab.active, .chip.active {
+      background:linear-gradient(135deg, rgba(56,189,248,.28), rgba(167,139,250,.22));
+      border-color:rgba(56,189,248,.55);
+    }
+    .controls {
+      margin:12px 0;
+      align-items:center;
+    }
+    .input, select {
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:10px 12px;
+      background:rgba(255,255,255,.06);
+      color:var(--text);
+      outline:none;
+      min-height:42px;
+    }
+    select option { color:#111; }
+    .input {
+      min-width:220px;
+      flex:1;
+    }
+    .section-title {
+      display:flex;
+      align-items:end;
+      justify-content:space-between;
+      margin:16px 2px 10px;
+    }
+    .section-title h2 {
+      margin:0;
+      font-size:18px;
+    }
+    .section-title small {
+      color:var(--muted);
+    }
+    .notice {
+      background:rgba(245,158,11,.10);
+      border:1px solid rgba(245,158,11,.25);
+      color:#fde68a;
+      border-radius:var(--radius);
+      padding:12px;
+      font-size:13px;
+      margin:12px 0;
+    }
+    .grid {
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap:12px;
+    }
+    .match {
+      background:linear-gradient(180deg, rgba(19,40,66,.98), rgba(13,27,47,.98));
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:14px;
+      overflow:hidden;
+    }
+    .match-top {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:12px;
+    }
+    .badge {
+      display:inline-flex;
+      align-items:center;
+      gap:5px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.06);
+      color:var(--muted);
+      border-radius:999px;
+      padding:5px 8px;
+      font-size:12px;
+    }
+    .confidence-高 { color:#bbf7d0; border-color:rgba(34,197,94,.35); background:rgba(34,197,94,.10); }
+    .confidence-中 { color:#bae6fd; border-color:rgba(56,189,248,.35); background:rgba(56,189,248,.10); }
+    .confidence-低 { color:#fde68a; border-color:rgba(245,158,11,.35); background:rgba(245,158,11,.10); }
+    .teams {
+      display:grid;
+      grid-template-columns:1fr auto 1fr;
+      align-items:center;
+      gap:10px;
+      margin:10px 0 8px;
+    }
+    .team {
+      min-width:0;
+    }
+    .team strong {
+      display:block;
+      font-size:18px;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+    .team span {
+      color:var(--muted);
+      font-size:12px;
+    }
+    .team.away { text-align:right; }
+    .score {
+      min-width:78px;
+      text-align:center;
+      font-weight:900;
+      font-size:28px;
+      letter-spacing:.5px;
+      color:#fff;
+      border-radius:16px;
+      padding:8px 10px;
+      background:linear-gradient(135deg, rgba(56,189,248,.22), rgba(167,139,250,.20));
+      border:1px solid rgba(255,255,255,.12);
+    }
+    .prob {
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap:8px;
+      margin:12px 0;
+    }
+    .prob div {
+      background:rgba(0,0,0,.16);
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:8px;
+      text-align:center;
+      font-size:12px;
+    }
+    .prob b {
+      display:block;
+      font-size:17px;
+      margin-top:1px;
+    }
+    .reason {
+      color:var(--muted);
+      font-size:12px;
+      min-height:38px;
+    }
+    .tags {
+      display:flex;
+      gap:6px;
+      flex-wrap:wrap;
+      margin:10px 0 12px;
+    }
+    .tag {
+      font-size:12px;
+      border-radius:999px;
+      padding:5px 8px;
+      color:#dbeafe;
+      background:rgba(59,130,246,.12);
+      border:1px solid rgba(59,130,246,.24);
+    }
+    details {
+      margin-top:10px;
+      border-top:1px dashed var(--line);
+      padding-top:10px;
+    }
+    summary {
+      cursor:pointer;
+      color:#d7e9ff;
+      font-size:13px;
+    }
+    .feedback {
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:8px;
+      margin-top:10px;
+    }
+    .feedback textarea {
+      grid-column:1/-1;
+    }
+    textarea, input {
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:10px;
+      background:rgba(0,0,0,.18);
+      color:var(--text);
+      outline:none;
+    }
+    textarea {
+      min-height:72px;
+      resize:vertical;
+    }
+    .save {
+      grid-column:1/-1;
+      background:rgba(34,197,94,.14);
+      border-color:rgba(34,197,94,.32);
+    }
+    .table-wrap {
+      overflow-x:auto;
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+    }
+    table {
+      width:100%;
+      border-collapse:collapse;
+      min-width:640px;
+      font-size:13px;
+    }
+    th, td {
+      border-bottom:1px solid var(--line);
+      padding:10px 9px;
+      text-align:left;
+      white-space:nowrap;
+    }
+    th {
+      color:#dbeafe;
+      background:rgba(255,255,255,.05);
+      position:sticky;
+      top:0;
+    }
+    tr:last-child td { border-bottom:0; }
+    .rank1 td:first-child::after, .rank2 td:first-child::after {
+      content:" 出线";
+      color:#bbf7d0;
+      font-size:11px;
+      margin-left:6px;
+    }
+    .third td:first-child::after {
+      content:" 争第三";
+      color:#fde68a;
+      font-size:11px;
+      margin-left:6px;
+    }
+    .toolbar {
+      position:fixed;
+      left:0; right:0; bottom:0;
+      z-index:20;
+      padding:10px 12px calc(10px + env(safe-area-inset-bottom));
+      background:rgba(7,17,31,.92);
+      backdrop-filter:blur(16px);
+      border-top:1px solid var(--line);
+      display:flex;
+      gap:8px;
+      justify-content:center;
+    }
+    .toolbar button {
+      flex:1;
+      max-width:260px;
+      background:linear-gradient(135deg, rgba(56,189,248,.22), rgba(34,197,94,.18));
+    }
+    .empty {
+      color:var(--muted);
+      text-align:center;
+      padding:28px 10px;
+      border:1px dashed var(--line);
+      border-radius:var(--radius);
+    }
+    @media (max-width: 760px) {
+      .app { padding:12px 10px 92px; }
+      .hero { margin:-12px -10px 12px; padding:14px 10px 12px; }
+      h1 { font-size:21px; }
+      .stats { grid-template-columns: repeat(2,1fr); }
+      .grid { grid-template-columns:1fr; }
+      .team strong { font-size:16px; }
+      .score { font-size:24px; min-width:70px; }
+      .prob { gap:6px; }
+      .tab, .chip, button { padding:9px 11px; }
+      .input { min-width:180px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="hero">
+    <div class="hero-inner">
+      <h1>2026 世界杯小组赛预测器</h1>
+      <p class="sub">手机端优先 · 72 场小组赛预测 · 可录入实际比分和反馈 · 可导出 JSON 供微信小程序/APP 后续接入</p>
+      <div class="stats">
+        <div class="stat"><b>48</b><span>参赛球队</span></div>
+        <div class="stat"><b>12</b><span>小组 A-L</span></div>
+        <div class="stat"><b>72</b><span>小组赛场次</span></div>
+        <div class="stat"><b>32</b><span>预计晋级席位</span></div>
+      </div>
+    </div>
+  </div>
+
+  <main class="app">
+    <div class="tabs" id="viewTabs">
+      <button class="tab active" data-view="matches">比赛预测</button>
+      <button class="tab" data-view="tables">预测积分榜</button>
+      <button class="tab" data-view="model">模型说明</button>
+    </div>
+
+    <div class="notice">
+      说明：本页面展示的是“模型预测初版”，不是确定赛果，也不是投注建议。你后续可以在每场比赛下方填写实际比分、情报、伤停或你自己的修正意见，点击保存后会存在本机浏览器 localStorage。
+    </div>
+
+    <section id="matchesView">
+      <div class="controls">
+        <select id="groupFilter">
+          <option value="ALL">全部小组</option>
+          <option value="A">A组</option><option value="B">B组</option><option value="C">C组</option>
+          <option value="D">D组</option><option value="E">E组</option><option value="F">F组</option>
+          <option value="G">G组</option><option value="H">H组</option><option value="I">I组</option>
+          <option value="J">J组</option><option value="K">K组</option><option value="L">L组</option>
+        </select>
+        <input id="searchInput" class="input" placeholder="搜索球队，如：阿根廷 / Argentina / 韩国" />
+        <button id="clearBtn">清空</button>
+      </div>
+      <div class="section-title">
+        <h2>所有小组赛预测</h2>
+        <small id="matchCount"></small>
+      </div>
+      <div class="grid" id="matchesGrid"></div>
+    </section>
+
+    <section id="tablesView" style="display:none">
+      <div class="section-title">
+        <h2>预测小组积分榜</h2>
+        <small>根据页面内 72 场预测比分自动汇总</small>
+      </div>
+      <div id="tablesWrap"></div>
+    </section>
+
+    <section id="modelView" style="display:none">
+      <div class="section-title">
+        <h2>模型说明</h2>
+        <small>后续可替换为真实数据库模型</small>
+      </div>
+      <div class="match">
+        <h3 style="margin-top:0">当前预测逻辑</h3>
+        <p class="reason" style="font-size:14px">
+          这个版本把每支队伍先转成 strengthScore，然后按两队分差给出胜平负概率、比分倾向和信心等级。
+          strengthScore 的初版来源包括：历史世界杯底蕴、近年国家队强度、赛区强弱、东道主加成、球风稳定性。
+          后续你可以把历史四表中的球员 KDA、在场净胜、上下场比分、加时/点球表现接进来，重新训练 strengthScore。
+        </p>
+        <div class="table-wrap" style="margin-top:12px">
+          <table>
+            <thead>
+              <tr><th>字段</th><th>说明</th><th>后续小程序/APP用途</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>strengthScore</td><td>球队综合强度，0-100</td><td>赛前预测主因子</td></tr>
+              <tr><td>predictedScore</td><td>模型建议比分</td><td>首页卡片直接展示</td></tr>
+              <tr><td>win/draw/lose probability</td><td>胜平负概率</td><td>做进度条/概率柱状图</td></tr>
+              <tr><td>confidence</td><td>高/中/低</td><td>提示用户预测风险</td></tr>
+              <tr><td>feedback</td><td>用户反馈字段</td><td>让你持续修正模型</td></tr>
+              <tr><td>actualScore</td><td>实际比分</td><td>赛后回测准确率</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="toolbar">
+    <button id="exportBtn">导出反馈 JSON</button>
+    <button id="copyBtn">复制全部预测</button>
+  </div>
+
+  <script>
+    const teams = {
+  "Mexico": {
+    "zh": "墨西哥",
+    "rating": 78,
+    "group": "A",
+    "note": "东道主加成，主场氛围强"
+  },
+  "South Africa": {
+    "zh": "南非",
+    "rating": 68,
+    "group": "A",
+    "note": "身体对抗强，但整体排名偏低"
+  },
+  "South Korea": {
+    "zh": "韩国",
+    "rating": 76,
+    "group": "A",
+    "note": "亚洲强队，转换速度快"
+  },
+  "Czechia": {
+    "zh": "捷克",
+    "rating": 74,
+    "group": "A",
+    "note": "欧洲体系稳定，进攻爆点一般"
+  },
+  "Canada": {
+    "zh": "加拿大",
+    "rating": 73,
+    "group": "B",
+    "note": "东道主加成，速度与主场优势"
+  },
+  "Bosnia and Herzegovina": {
+    "zh": "波黑",
+    "rating": 72,
+    "group": "B",
+    "note": "欧洲队，身体和定位球有威胁"
+  },
+  "Qatar": {
+    "zh": "卡塔尔",
+    "rating": 68,
+    "group": "B",
+    "note": "亚洲杯经验，但世界杯强度考验大"
+  },
+  "Switzerland": {
+    "zh": "瑞士",
+    "rating": 80,
+    "group": "B",
+    "note": "大赛稳定性高，防守纪律好"
+  },
+  "Brazil": {
+    "zh": "巴西",
+    "rating": 88,
+    "group": "C",
+    "note": "传统强队，个人能力和进攻上限高"
+  },
+  "Morocco": {
+    "zh": "摩洛哥",
+    "rating": 82,
+    "group": "C",
+    "note": "防守组织强，2022表现证明淘汰赛能力"
+  },
+  "Haiti": {
+    "zh": "海地",
+    "rating": 60,
+    "group": "C",
+    "note": "小组实力偏弱，需防守反击偷分"
+  },
+  "Scotland": {
+    "zh": "苏格兰",
+    "rating": 75,
+    "group": "C",
+    "note": "身体对抗强，定位球可制造机会"
+  },
+  "United States": {
+    "zh": "美国",
+    "rating": 79,
+    "group": "D",
+    "note": "东道主加成，冲击力和节奏不错"
+  },
+  "Paraguay": {
+    "zh": "巴拉圭",
+    "rating": 75,
+    "group": "D",
+    "note": "南美硬度强，防守韧性好"
+  },
+  "Australia": {
+    "zh": "澳大利亚",
+    "rating": 72,
+    "group": "D",
+    "note": "身体和高空球强，阵地进攻一般"
+  },
+  "Turkey": {
+    "zh": "土耳其",
+    "rating": 77,
+    "group": "D",
+    "note": "技术和对抗兼具，但稳定性波动"
+  },
+  "Germany": {
+    "zh": "德国",
+    "rating": 85,
+    "group": "E",
+    "note": "传统强队，整体压迫与定位球优势"
+  },
+  "Curaçao": {
+    "zh": "库拉索",
+    "rating": 58,
+    "group": "E",
+    "note": "首次/低经验级别，防线压力大"
+  },
+  "Côte d’Ivoire": {
+    "zh": "科特迪瓦",
+    "rating": 75,
+    "group": "E",
+    "note": "非洲强队，身体天赋突出"
+  },
+  "Ecuador": {
+    "zh": "厄瓜多尔",
+    "rating": 78,
+    "group": "E",
+    "note": "南美队，年轻化和对抗强"
+  },
+  "Netherlands": {
+    "zh": "荷兰",
+    "rating": 84,
+    "group": "F",
+    "note": "强队底盘，防守和边路推进突出"
+  },
+  "Japan": {
+    "zh": "日本",
+    "rating": 80,
+    "group": "F",
+    "note": "传控与反击效率高，亚洲最稳队之一"
+  },
+  "Sweden": {
+    "zh": "瑞典",
+    "rating": 76,
+    "group": "F",
+    "note": "欧洲强硬派，空中优势明显"
+  },
+  "Tunisia": {
+    "zh": "突尼斯",
+    "rating": 70,
+    "group": "F",
+    "note": "防守韧性强，进攻效率需提升"
+  },
+  "Belgium": {
+    "zh": "比利时",
+    "rating": 82,
+    "group": "G",
+    "note": "欧洲强队，进攻经验丰富"
+  },
+  "Egypt": {
+    "zh": "埃及",
+    "rating": 76,
+    "group": "G",
+    "note": "非洲强队，边路和反击威胁"
+  },
+  "Iran": {
+    "zh": "伊朗",
+    "rating": 74,
+    "group": "G",
+    "note": "亚洲强队，防守纪律好"
+  },
+  "New Zealand": {
+    "zh": "新西兰",
+    "rating": 62,
+    "group": "G",
+    "note": "大洋洲代表，整体强度偏弱"
+  },
+  "Spain": {
+    "zh": "西班牙",
+    "rating": 90,
+    "group": "H",
+    "note": "欧洲冠军级别，控球和压迫强"
+  },
+  "Cape Verde": {
+    "zh": "佛得角",
+    "rating": 66,
+    "group": "H",
+    "note": "新军黑马属性，但大赛经验不足"
+  },
+  "Saudi Arabia": {
+    "zh": "沙特",
+    "rating": 70,
+    "group": "H",
+    "note": "亚洲代表，反击速度有威胁"
+  },
+  "Uruguay": {
+    "zh": "乌拉圭",
+    "rating": 82,
+    "group": "H",
+    "note": "南美强队，强对抗和锋线效率"
+  },
+  "France": {
+    "zh": "法国",
+    "rating": 91,
+    "group": "I",
+    "note": "争冠级别，阵容深度极强"
+  },
+  "Senegal": {
+    "zh": "塞内加尔",
+    "rating": 79,
+    "group": "I",
+    "note": "非洲强队，身体与速度优势"
+  },
+  "Iraq": {
+    "zh": "伊拉克",
+    "rating": 65,
+    "group": "I",
+    "note": "亚洲队，防守硬度不错"
+  },
+  "Norway": {
+    "zh": "挪威",
+    "rating": 83,
+    "group": "I",
+    "note": "锋线明星级，进攻终结强"
+  },
+  "Argentina": {
+    "zh": "阿根廷",
+    "rating": 90,
+    "group": "J",
+    "note": "卫冕冠军级别，体系成熟"
+  },
+  "Algeria": {
+    "zh": "阿尔及利亚",
+    "rating": 73,
+    "group": "J",
+    "note": "非洲强队，反击质量不低"
+  },
+  "Austria": {
+    "zh": "奥地利",
+    "rating": 78,
+    "group": "J",
+    "note": "欧洲体系队，高位压迫能力强"
+  },
+  "Jordan": {
+    "zh": "约旦",
+    "rating": 60,
+    "group": "J",
+    "note": "新军/弱势方，需低位防守争分"
+  },
+  "Portugal": {
+    "zh": "葡萄牙",
+    "rating": 87,
+    "group": "K",
+    "note": "争冠外围强队，前场选择丰富"
+  },
+  "DR Congo": {
+    "zh": "民主刚果",
+    "rating": 68,
+    "group": "K",
+    "note": "身体能力强，但整体稳定性一般"
+  },
+  "Uzbekistan": {
+    "zh": "乌兹别克斯坦",
+    "rating": 70,
+    "group": "K",
+    "note": "新军/亚洲黑马，组织纪律不错"
+  },
+  "Colombia": {
+    "zh": "哥伦比亚",
+    "rating": 81,
+    "group": "K",
+    "note": "南美强队，技术和个人突破强"
+  },
+  "England": {
+    "zh": "英格兰",
+    "rating": 88,
+    "group": "L",
+    "note": "争冠热门，阵容身价和深度高"
+  },
+  "Croatia": {
+    "zh": "克罗地亚",
+    "rating": 82,
+    "group": "L",
+    "note": "大赛经验强，中场控制和韧性好"
+  },
+  "Ghana": {
+    "zh": "加纳",
+    "rating": 71,
+    "group": "L",
+    "note": "非洲劲旅，速度和反击能力"
+  },
+  "Panama": {
+    "zh": "巴拿马",
+    "rating": 62,
+    "group": "L",
+    "note": "中北美队，整体实力偏下"
+  }
+};
+
+    const matches = [
+  {
+    "id": "M01",
+    "group": "A",
+    "dateET": "2026-06-11",
+    "timeET": "15:00",
+    "home": "Mexico",
+    "away": "South Africa",
+    "homeZh": "墨西哥",
+    "awayZh": "南非",
+    "home_score": 2,
+    "away_score": 0,
+    "home_win": 54,
+    "draw": 26,
+    "away_win": 20,
+    "confidence": "中",
+    "pick": "主胜",
+    "ou": "小2.5",
+    "reason": "墨西哥强度78 vs 南非强度68；东道主加成，主场氛围强；身体对抗强，但整体排名偏低。"
+  },
+  {
+    "id": "M02",
+    "group": "A",
+    "dateET": "2026-06-11",
+    "timeET": "22:00",
+    "home": "South Korea",
+    "away": "Czechia",
+    "homeZh": "韩国",
+    "awayZh": "捷克",
+    "home_score": 1,
+    "away_score": 1,
+    "home_win": 39,
+    "draw": 29,
+    "away_win": 32,
+    "confidence": "低",
+    "pick": "平",
+    "ou": "小2.5",
+    "reason": "韩国强度76 vs 捷克强度74；亚洲强队，转换速度快；欧洲体系稳定，进攻爆点一般。"
+  },
+  {
+    "id": "M03",
+    "group": "B",
+    "dateET": "2026-06-12",
+    "timeET": "15:00",
+    "home": "Canada",
+    "away": "Bosnia and Herzegovina",
+    "homeZh": "加拿大",
+    "awayZh": "波黑",
+    "home_score": 1,
+    "away_score": 1,
+    "home_win": 37,
+    "draw": 30,
+    "away_win": 34,
+    "confidence": "低",
+    "pick": "平",
+    "ou": "小2.5",
+    "reason": "加拿大强度73 vs 波黑强度72；东道主加成，速度与主场优势；欧洲队，身体和定位球有威胁。"
+  },
+  {
+    "id": "M04",
+    "group": "D",
+    "dateET": "2026-06-12",
+    "timeET": "21:00",
+    "home": "United States",
+    "away": "Paraguay",
+    "homeZh": "美国",
+    "awayZh": "巴拉圭",
+    "home_score": 2,
+    "away_score": 1,
+    "home_win": 43,
+    "draw": 28,
+    "away_win": 29,
+    "confidence": "低",
+    "pick": "主胜",
+    "ou": "大2.5",
+    "reason": "美国强度79 vs 巴拉圭强度75；东道主加成，冲击力和节奏不错；南美硬度强，防守韧性好。"
+  },
+  {
+    "id": "M05",
+    "group": "B",
+    "dateET": "2026-06-13",
+    "timeET": "15:00",
+    "home": "Qatar",
+    "away": "Switzerland",
+    "homeZh": "卡塔尔",
+    "awayZh": "瑞士",
+    "home_score": 0,
+    "away_score": 2,
+    "home_win": 18,
+    "draw": 25,
+    "away_win": 57,
+    "confidence": "中",
+    "pick": "客胜",
+    "ou": "小2.5",
+    "reason": "卡塔尔强度68 vs 瑞士强度80；亚洲杯经验，但世界杯强度考验大；大赛稳定性高，防守纪律好。"
+  },
+  {
+    "id": "M06",
+    "group": "C",
+    "dateET": "2026-06-13",
+    "timeET": "18:00",
+    "home": "Brazil",
+    "away": "Morocco",
+    "homeZh": "巴西",
+    "awayZh": "摩洛哥",
+    "home_score": 2,
+    "away_score": 1,
+    "home_win": 46,
+    "draw": 28,
+    "away_win": 26,
+    "confidence": "低",
+    "pick": "主胜",
+    "ou": "大2.5",
+    "reason": "巴西强度88 vs 摩洛哥强度82；传统强队，个人能力和进攻上限高；防守组织强，2022表现证明淘汰赛能力。"
+  },
+  {
+    "id": "M07",
+    "group": "C",
+    "dateET": "2026-06-13",
+    "timeET": "21:00",
+    "home": "Haiti",
+    "away": "Scotland",
+    "homeZh": "海地",
+    "awayZh": "苏格兰",
+    "home_score": 0,
+    "away_score": 2,
+    "home_win": 15,
+    "draw": 24,
+    "away_win": 61,
+    "confidence": "高",
+    "pick": "客胜",
+    "ou": "小2.5",
+    "reason": "海地强度60 vs 苏格兰强度75；小组实力偏弱，需防守反击偷分；身体对抗强，定位球可制造机会。"
+  },
+  {
+    "id": "M08",
+    "group": "D",
+    "dateET": "2026-06-14",
+    "timeET": "00:00",
+    "home": "Australia",
+    "away": "Turkey",
+    "homeZh": "澳大利亚",
+    "awayZh": "土耳其",
+    "home_score": 1,
+    "away_score": 2,
+    "home_win": 28,
+    "draw": 28,
+    "away_win": 44,
+    "confidence": "低",
+    "pick": "客胜",
+    "ou": "大2.5",
+    "reason": "澳大利亚强度72 vs 土耳其强度77；身体和高空球强，阵地进攻一般；技术和对抗兼具，但稳定性波动。"
+  },
+  {
+    "id": "M09",
+    "group": "E",
+    "dateET": "2026-06-14",
+    "timeET": "13:00",
+    "home": "Germany",
+    "away": "Curaçao",
+    "homeZh": "德国",
+    "awayZh": "库拉索",
+    "home_score": 4,
+    "away_score": 0,
+    "home_win": 75,
+    "draw": 19,
+    "away_win": 6,
+    "confidence": "高",
+    "pick": "主胜",
+    "ou": "大2.5",
+    "reason": "德国强度85 vs 库拉索强度58；传统强队，整体压迫与定位球优势；首次/低经验级别，防线压力大。"
+  },
+  {
+    "id": "M10",
+    "group": "F",
+    "dateET": "2026-06-14",
+    "timeET": "16:00",
+    "home": "Netherlands",
+    "away": "Japan",
+    "homeZh": "荷兰",
+    "awayZh": "日本",
+    "home_score": 2,
+    "away_score": 1,
+    "home_win": 43,
+    "draw": 28,
+    "away_win": 29,
+    "confidence": "低",
+    "pick": "主胜",
+    "ou": "大2.5",
+    "reason": "荷兰强度84 vs 日本强度80；强队底盘，防守和边路推进突出；传控与反击效率高，亚洲最稳队之一。"
+  },
+  {
+    "id": "M11",
+    "group": "E",
+    "dateET": "2026-06-14",
+    "timeET": "19:00",
+    "home": "Côte d’Ivoire",
+    "away": "Ecuador",
+    "homeZh": "科特迪瓦",
+    "awayZh": "厄瓜多尔",
+    "home_score": 1,
+    "away_score": 1,
+    "home_win": 31,
+    "draw": 29,
+    "away_win": 41,
+    "confidence": "低",
+    "pick": "平",
+    "ou": "小2.5",
+    "reason": "科特迪瓦强度75 vs 厄瓜多尔强度78；非洲强队，身体天赋突出；南美队，年轻化和对抗强。"
+  },
+  {
+    "id": "M12",
+    "group": "F",
+    "dateET": "2026-06-14",
+    "timeET": "22:00",
+    "home": "Sweden",
+    "away": "Tunisia",
+    "homeZh": "瑞典",
+    "awayZh": "突尼斯",
+    "home_score": 2,
+    "away_score": 1,
+    "home_win": 46,
+    "draw": 28,
+    "away_win": 26,
+    "confidence": "低",
+    "pick": "主胜",
+    "ou": "大2.5",
+    "reason": "瑞典强度76 vs 突尼斯强度70；欧洲强硬派，空中优势明显；防守韧性强，进攻效率需提升。"
+  },
+  {
+    "id": "M13",
+    "group": "H",
+    "dateET": "2026-06-15",
+    "timeET": "12:00",
+    "home": "Spain",
+    "away": "Cape Verde",
+    "homeZh": "西班牙",
+    "awayZh": "佛得角",
+    "home_score": 3,
+    "away_score": 0,
+    "home_win": 72,
+    "draw": 20,
+    "away_win": 7,
+    "confidence": "高",
+    "pick": "主胜",
+    "ou": "大2.5",
+    "reason": "西班牙强度90 vs 佛得角强度66；欧洲冠军级别，控球和压迫强；新军黑马属性，但大赛经验不足。"
+  },
+  {
+    "id": "M14",
+    "group": "G",
+    "dateET": "2026-06-15",
+    "timeET": "15:00",
+    "home": "Belgium",
+    "away": "Egypt",
+    "homeZh": "比利时",
+    "awayZh": "埃及",
+    "home_score": 2,
+    "away_score": 1,
+    "home_win": 46,
+    "draw": 28,
+    "away_win": 26,
+    "confidence": "低",
+    "pick": "主胜",
+    "ou": "大2.5",
+    "reason": "比利时强度82 vs 埃及强度76；欧洲强队，进攻经验丰富；非洲强队，边路和反击威胁。"
+  },
+  {
+    "id": "M15",
+    "group": "H",
+    "dateET": "2026-06-15",
+    "timeET": "18:00",
+    "home": "Saudi Arabia",
+    "away": "Uruguay",
+    "homeZh": "沙特",
+    "awayZh": "乌拉圭",
+    "home_score": 0,
+    "away_score": 2,
+    "home_win": 18,
+    "draw": 25,
+    "away_win": 57,
+    "confidence": "中",
+    "pick": "客胜",
+    "ou": "小2.5",
+    "reason": "沙特强度70 vs 乌拉圭强度82；亚洲代表，反击速度有威胁；南美强队，强对抗和锋线效率。"
+  },
+  {
+    "id": "M16",
+    "group": "G",
+    "dateET": "2026-06-15",
+    "timeET": "21:00",
+    "home": "Iran",
+    "away": "New Zealand",
+    "homeZh": "伊朗",
+    "awayZh": "新西兰",
+    "home_score": 2,
+    "away_score": 0,
+    "home_win": 57,
+    "draw": 25,
+    "away_win": 18,
+    "confidence": "中",
+    "pick": "主胜",
+    "ou": "小2.5",
+    "reason": "伊朗强度74 vs 新西兰强度62；亚洲强队，防守纪律好；大洋洲代表，整体强度偏弱。"
+  },
+  {
+    "id": "M17",
+    "group": "I",
+    "dateET": "2026-06-16",
+    "timeET": "15:00",
+    "home": "France",
+    "away": "Senegal",
+    "homeZh": "法国",
+    "awayZh": "塞内加尔",
+    "home_score": 2,
+    "away_score": 0,
+    "home_win": 57,
+    "draw": 25,
+    "away_win": 18,
+    "confidence": "中",
+    "pick": "主胜",
+    "ou": "小2.5",
+    "reason": "法国强度91 vs 塞内加尔强度79；争冠级别，阵容深度极强；非洲强队，身体与速度优势。"
+  },
+  {
+    "id": "M18",
+    "group": "I",
+    "dateET": "2026-06-16",
+    "timeET": "18:00",
+    "home": "Iraq",
+    "away": "Norway",
+    "homeZh": "伊拉克",
+    "awayZh": "挪威",
+    "home_score": 0,
+    "away_score": 3,
+    "home_win": 12,
+    "draw": 23,
+    "away_win": 66,
+    "confidence": "高",
+    "pick": "客胜",
+    "ou": "大2.5",
+    "reason": "伊拉克强度65 vs 挪威强度83；亚洲队，防守硬度不错；锋线明星级，进攻终结强。"
+  },
+  {
+    "id": "M19",
+    "group": "J",
+    "dateET": "2026-06-16",
+    "timeET": "21:00",
+    "home": "Argentina",
+    "away": "Algeria",
+    "homeZh": "阿根廷",
+    "awayZh": "阿尔及利亚",
+    "home_score": 2,
+    "away_score": 0,
+    "home_win": 64,
+    "draw": 23,
+    "away_win": 13,
+    "confidence": "高",
+    "pick": "主胜",
+    "ou": "小2.5",
+    "reason": "阿根廷强度90 vs 阿尔及利亚强度73；卫冕冠军级别，体系成熟；非洲强队，反击质量不低。"
+  },
+  {
+    "id": "M20",
+    "group": "J",
+    "dateET": "2026-06-17",
+    "timeET": "00:00",
+    "home": "Austria",
+    "away": "Jordan",
+    "homeZh": "奥地利",
+    "awayZh": "约旦",
+    "home_score": 3,
+    "away_score": 0,
+    "home_win": 66,
+    "draw": 23,
+    "away_win": 12,
+    "confidence": "高",
+    "pick": "主胜",
+    "ou": "大2.5",
+    "reason": "奥地利强度78 vs 约旦强度60；欧洲体系队，高位压迫能力强；新军/弱势方，需低位防守争分。"
+  },
+  {
+    "id": "M21",
+    "group": "K",
+    "dateET": "2026-06-17",
+    "timeET": "13:00",
+    "home": "Portugal",
+    "away": "DR Congo",
+    "homeZh": "葡萄牙",
+    "awayZh": "民主刚果",
+    "home_score": 3,
+    "away_score": 0,
+    "home_win": 67,
+    "draw": 22,
+    "away_win": 11,
+    "confidence": "高",
+    "pick": "主胜",
+    "ou": "大2.5",
+    "reason": "葡萄牙强度87 vs 民主刚果强度68；争冠外围强队，前场选择丰富；身体能力强，但整体稳定性一般。"
+  },
+  {
+    "id": "M22",
+    "group": "L",
+    "dateET": "2026-06-17",
+    "timeET": "16:00",
+    "home": "England",
+    "away": "Croatia",
+    "homeZh": "英格兰",
+    "awayZh": "克罗地亚",
+    "home_score": 2,
+    "away_score": 1,
+    "home_win": 46,
+    "draw": 28,
+    "away_win": 26,
+    "confidence": "低",
+    "pick": "主胜",
+    "ou": "大2.5",
+    "reason": "英格兰强度88 vs 克罗地亚强度82；争冠热门，阵容身价和深度高；大赛经验强，中场控制和韧性好。"
+  },
+  {
+    "id": "M23",
+    "group": "L",
+    "dateET": "2026-06-17",
+    "timeET": "19:00",
+    "home": "Ghana",
+    "away": "Panama",
+    "homeZh": "加纳",
+    "awayZh": "巴拿马",
+    "home_score": 2,
+    "away_score": 0,
+    "home_win": 52,
+    "draw": 26,
+    "away_win": 22,
+    "confidence": "中",
+    "pick": "主胜",
+    "ou": "小2.5",
+    "reason": "加纳强度71 vs 巴拿马强度62；非洲劲旅，速度和反击能力；中北美队，整体实力偏下。"
+  },
+  {
+    "id": "M24",
+    "group": "K",
+    "dateET": "2026-06-17",
+    "timeET": "22:00",
+    "home": "Uzbekistan",
+    "away": "Colombia",
+    "homeZh": "乌兹别克斯坦",
+    "awayZh": "哥伦比亚",
+    "home_score": 0,
+    "away_score": 2,
+    "home_win": 19,
+    "draw": 26,
+    "away_win": 55,
+    "confidence": "中",
+    "pick": "客胜",
+    "ou": "小2.5",
+    "reason": "乌兹别克斯坦强度70 vs 哥伦比亚强度81；新军/亚洲黑马，组织纪律不错；南美强队，技术和个人突破强。"
+  },
+  {
+    "id": "M25",
+    "group": "A",
+    "dateET": "2026-06-18",
+    "timeET": "12:00",
+    "home": "Czechia",
+    "away": "South Africa",
+    "homeZh": "捷克",
+    "awayZh": "南非",
+    "home_score": 2,
+    "away_score": 1,
+    "home_win": 46,
+    "draw": 28,
+    "away_win": 26,
+    "confidence": "低",
+    "pick": "主胜",
+    "ou": "大2.5",
+    "reason": "捷克强度74 vs 南非强度68；欧洲体系稳定，进攻爆点一般；身体对抗强，但整体排名偏低。"
+  },
+  {
+    "id": "M26",
+    "group": "B",
+    "dateET": "2026-06-18",
+    "timeET": "15:00",
+    "home": "Switzerland",
+    "away": "Bosnia and Herzegovina",
+    "homeZh": "瑞士",
+    "awayZh": "波黑",
+    "home_score": 2,
+    "away_score": 0,
+    "home_win": 50,
+    "draw": 27,
+    "away_win": 23,
+    "confidence": "中",
+    "pick": "主胜",
+    "ou": "小2.5",
+    "reason": "瑞士强度80 vs 波黑强度72；大赛稳定性高，防守纪律好；欧洲队，身体和定位球有威胁。"
+  },
+  {
+    "id": "M27",
+    "group": "B",
+    "dateET": "2026-06-18",
+    "timeET": "18:00",
+    "home": "Canada",
+    "away": "Qatar",
+    "homeZh": "加拿大",
+    "awayZh": "卡塔尔",
+    "home_score": 2,
+    "away_score": 1,
+    "home_win": 44,
+    "draw": 28,
+    "away_win": 28,
+    "confidence": "低",
+    "pick": "主胜",
+    "ou": "大2.5",
+    "reason": "加拿大强度73 vs 卡塔尔强度68；东道主加成，速度与主场优势；亚洲杯经验，但世界杯强度考验大。"
+  },
+  {
+    "id": "M28",
+    "group": "A",
+    "dateET": "2026-06-18",
+    "timeET": "21:00",
+    "home": "Mexico",
+    "away": "South Korea",
+    "homeZh": "墨西哥",
+    "awayZh": "韩国",
+    "home_score": 1,
+    "away_score": 1,
+    "home_win": 39,
+    "draw": 29,
+    "away_win": 32,
+    "confidence": "低",
+    "pick": "平",
+    "ou": "小2.5",
+    "reason": "墨西哥强度78 vs 韩国强度76；东道主加成，主场氛围强；亚洲强队，转换速度快。"
+  },
+  {
+    "id": "M29",
+    "group": "D",
+    "dateET": "2026-06-19",
+    "timeET": "15:00",
+    "home": "United States",
+    "away": "Australia",
+    "homeZh": "美国",
+    "awayZh": "澳大利亚",
+    "home_score": 2,
+    "away_score": 1,
+    "home_win": 48,
+    "draw": 27,
+    "away_win": 25,
+    "confidence": "中",
+    "pick": "主胜",
+    "ou": "大2.5",
+    "reason": "美国强度79 vs 澳大利亚强度72；东道主加成，冲击力和节奏不错；身体和高空球强，阵地进攻一般。"
+  },
+  {
+    "id": "M30",
+    "group": "C",
+    "dateET": "2026-06-19",
+    "timeET": "18:00",
+    "home": "Scotland",
+    "away": "Morocco",
+    "homeZh": "苏格兰",
+    "awayZh": "摩洛哥",
+    "home_score": 1,
+    "away_score": 2,
+    "home_win": 25,
+    "draw": 27,
+    "away_win": 48,
+    "confidence": "中",
+    "pick": "客胜",
+    "ou": "大2.5",
+    "reason": "苏格兰强度75 vs 摩洛哥强度82；身体对抗强，定位球可制造机会；防守组织强，2022表现证明淘汰赛能力。"
+  },
+  {
+    "id": "M31",
+    "group": "C",
+    "dateET": "2026-06-19",
+    "timeET": "20:30",
+    "home": "Brazil",
+    "away": "Haiti",
+    "homeZh": "巴西",
+    "awayZh": "海地",
+    "home_score": 4,
+    "away_score": 0,
+    "home_win": 76,
+    "draw": 19,
+    "away_win": 5,
+    "confidence": "高",
+    "pick": "主胜",
+    "ou": "大2.5",
+    "reason": "巴西强度88 vs 海地强度60；传统强队，个人能力和进攻上限高；小组实力偏弱，需防守反击偷分。"
+  },
+  {
+    "id": "M32",
+    "group": "D",
+    "dateET": "2026-06-19",
+    "timeET": "23:00",
+    "home": "Turkey",
+    "away": "Paraguay",
+    "homeZh": "土耳其",
+    "awayZh": "巴拉圭",
+    "home_score": 1,
+    "away_score": 1,
+    "home_win": 39,
+    "draw": 29,
+    "away_win": 32,
+    "confidence": "低",
+    "pick": "平",
+    "ou": "小2.5",
+    "reason": "土耳其强度77 vs 巴拉圭强度75；技术和对抗兼具，但稳定性波动；南美硬度强，防守韧性好。"
+  },
+  {
+    "id": "M33",
+    "group": "F",
+    "dateET": "2026-06-20",
+    "timeET": "13:00",
+    "home": "Netherlands",
+    "away": "Sweden",
+    "homeZh": "荷兰",
+    "awayZh": "瑞典",
+    "home_score": 2,
+    "away_score": 0,
+    "home_win": 50,
+    "draw": 27,
+    "away_win": 23,
+    "confidence": "中",
+    "pick": "主胜",
+    "ou": "小2.5",
+    "reason": "荷兰强度84 vs 瑞典强度76；强队底盘，防守和边路推进突出；欧洲强硬派，空中优势明显。"
+  },
+  {
+    "id": "M34",
+    "group": "E",
+    "dateET": "2026-06-20",
+    "timeET": "16:00",
+    "home": "Germany",
+    "away": "Côte d’Ivoire",
+    "homeZh": "德国",
+    "awayZh": "科特迪瓦",
+    "home_score": 2,
+    "away_score": 0,
+    "home_win": 54,
+    "draw": 26,
+    "away_win": 20,
+    "confidence": "中",
+    "pick": "主胜",
+    "ou": "小2.5",
+    "reason": "德国强度85 vs 科特迪瓦强度75；传统强队，整体压迫与定位球优势；非洲强队，身体天赋突出。"
+  },
+  {
+    "id": "M35",
+    "group": "E",
+    "dateET": "2026-06-20",
+    "timeET": "20:00",
+    "home": "Ecuador",
+    "away": "Curaçao",
+    "homeZh": "厄瓜多尔",
+    "awayZh": "库拉索",
+    "home_score": 3,
+    "away_score": 0,
+    "home_win": 68,
+    "draw": 22,
+    "away_win": 10,
+    "confidence": "高",
+    "pick": "主胜",
+    "ou": "大2.5",
+    "reason": "厄瓜多尔强度78 vs 库拉索强度58；南美队，年轻化和对抗强；首次/低经验级别，防线压力大。"
+  },
+  {
+    "id": "M36",
+    "group": "F",
+    "dateET": "2026-06-21",
+    "timeET": "00:00",
+    "home": "Tunisia",
+    "away": "Japan",
+    "homeZh": "突尼斯",
+    "awayZh": "日本",
+    "home_score": 0,
+    "away_score": 2,
+    "home_win": 20,
+    "draw": 26,
+    "away_win": 54,
+    "confidence": "中",
+    "pick": "客胜",
+    "ou": "小2.5",
+    "reason": "突尼斯强度70 vs 日本强度80；防守韧性强，进攻效率需提升；传控与反击效率高，亚洲最稳队之一。"
+  },
+  {
+    "id": "M37",
+    "group": "H",
+    "dateET": "2026-06-21",
+    "timeET": "12:00",
+    "home": "Spain",
+    "away": "Saudi Arabia",
+    "homeZh": "西班牙",
+    "awayZh": "沙特",
+    "home_score": 3,
+    "away_score": 0,
+    "home_win": 68,
+    "draw": 22,
+    "away_win": 10,
+    "confidence": "高",
+    "pick": "主胜",
+    "ou": "大2.5",
+    "reason": "西班牙强度90 vs 沙特强度70；欧洲冠军级别，控球和压迫强；亚洲代表，反击速度有威胁。"
+  },
+  {
+    "id": "M38",
+    "group": "G",
+    "dateET": "2026-06-21",
+    "timeET": "15:00",
+    "home": "Belgium",
+    "away": "Iran",
+    "homeZh": "比利时",
+    "awayZh": "伊朗",
+    "home_score": 2,
+    "away_score": 0,
+    "home_win": 50,
+    "draw": 27,
+    "away_win": 23,
+    "confidence": "中",
+    "pick": "主胜",
+    "ou": "小2.5",
+    "reason": "比利时强度82 vs 伊朗强度74；欧洲强队，进攻经验丰富；亚洲强队，防守纪律好。"
+  },
+  {
+    "id": "M39",
+    "group": "H",
+    "dateET": "2026-06-21",
+    "timeET": "18:00",
+    "home": "Uruguay",
+    "away": "Cape Verde",
+    "homeZh": "乌拉圭",
+    "awayZh": "佛得角",
+    "home_score": 2,
+    "away_score": 0,
+    "home_win": 63,
+    "draw": 24,
+    "away_win": 14,
+    "confidence": "高",
+    "pick": "主胜",
+    "ou": "小2.5",
+    "reason": "乌拉圭强度82 vs 佛得角强度66；南美强队，强对抗和锋线效率；新军黑马属性，但大赛经验不足。"
+  },
+  {
+    "id": "M40",
+    "group": "G",
+    "dateET": "2026-06-21",
+    "timeET": "21:00",
+    "home": "New Zealand",
+    "away": "Egypt",
+    "homeZh": "新西兰",
+    "awayZh": "埃及",
+    "home_score": 0,
+    "away_score": 2,
+    "home_win": 16,
+    "draw": 24,
+    "away_win": 60,
+    "confidence": "中",
+    "pick": "客胜",
+    "ou": "小2.5",
+    "reason": "新西兰强度62 vs 埃及强度76；大洋洲代表，整体强度偏弱；非洲强队，边路和反击威胁。"
+  },
+  {
+    "id": "M41",
+    "group": "J",
+    "dateET": "2026-06-22",
+    "timeET": "13:00",
+    "home": "Argentina",
+    "away": "Austria",
+    "homeZh": "阿根廷",
+    "awayZh": "奥地利",
+    "home_score": 2,
+    "away_score": 0,
+    "home_win": 57,
+    "draw": 25,
+    "away_win": 18,
+    "confidence": "中",
+    "pick": "主胜",
+    "ou": "小2.5",
+    "reason": "阿根廷强度90 vs 奥地利强度78；卫冕冠军级别，体系成熟；欧洲体系队，高位压迫能力强。"
+  },
+  {
+    "id": "M42",
+    "group": "I",
+    "dateET": "2026-06-22",
+    "timeET": "17:00",
+    "home": "France",
+    "away": "Iraq",
+    "homeZh": "法国",
+    "awayZh": "伊拉克",
+    "home_score": 4,
+    "away_score": 0,
+    "home_win": 74,
+    "draw": 20,
+    "away_win": 6,
+    "confidence": "高",
+    "pick": "主胜",
+    "ou": "大2.5",
+    "reason": "法国强度91 vs 伊拉克强度65；争冠级别，阵容深度极强；亚洲队，防守硬度不错。"
+  },
+  {
+    "id": "M43",
+    "group": "I",
+    "dateET": "2026-06-22",
+    "timeET": "20:00",
+    "home": "Norway",
+    "away": "Senegal",
+    "homeZh": "挪威",
+    "awayZh": "塞内加尔",
+    "home_score": 2,
+    "away_score": 1,
+    "home_win": 43,
+    "draw": 28,
+    "away_win": 29,
+    "confidence": "低",
+    "pick": "主胜",
+    "ou": "大2.5",
+    "reason": "挪威强度83 vs 塞内加尔强度79；锋线明星级，进攻终结强；非洲强队，身体与速度优势。"
+  },
+  {
+    "id": "M44",
+    "group": "J",
+    "dateET": "2026-06-22",
+    "timeET": "23:00",
+    "home": "Jordan",
+    "away": "Algeria",
+    "homeZh": "约旦",
+    "awayZh": "阿尔及利亚",
+    "home_score": 0,
+    "away_score": 2,
+    "home_win": 17,
+    "draw": 25,
+    "away_win": 58,
+    "confidence": "中",
+    "pick": "客胜",
+    "ou": "小2.5",
+    "reason": "约旦强度60 vs 阿尔及利亚强度73；新军/弱势方，需低位防守争分；非洲强队，反击质量不低。"
+  },
+  {
+    "id": "M45",
+    "group": "K",
+    "dateET": "2026-06-23",
+    "timeET": "13:00",
+    "home": "Portugal",
+    "away": "Uzbekistan",
+    "homeZh": "葡萄牙",
+    "awayZh": "乌兹别克斯坦",
+    "home_score": 2,
+    "away_score": 0,
+    "home_win": 64,
+    "draw": 23,
+    "away_win": 13,
+    "confidence": "高",
+    "pick": "主胜",
+    "ou": "小2.5",
+    "reason": "葡萄牙强度87 vs 乌兹别克斯坦强度70；争冠外围强队，前场选择丰富；新军/亚洲黑马，组织纪律不错。"
+  },
+  {
+    "id": "M46",
+    "group": "L",
+    "dateET": "2026-06-23",
+    "timeET": "16:00",
+    "home": "England",
+    "away": "Ghana",
+    "homeZh": "英格兰",
+    "awayZh": "加纳",
+    "home_score": 2,
+    "away_score": 0,
+    "home_win": 64,
+    "draw": 23,
+    "away_win": 13,
+    "confidence": "高",
+    "pick": "主胜",
+    "ou": "小2.5",
+    "reason": "英格兰强度88 vs 加纳强度71；争冠热门，阵容身价和深度高；非洲劲旅，速度和反击能力。"
+  },
+  {
+    "id": "M47",
+    "group": "L",
+    "dateET": "2026-06-23",
+    "timeET": "19:00",
+    "home": "Panama",
+    "away": "Croatia",
+    "homeZh": "巴拿马",
+    "awayZh": "克罗地亚",
+    "home_score": 0,
+    "away_score": 3,
+    "home_win": 10,
+    "draw": 22,
+    "away_win": 68,
+    "confidence": "高",
+    "pick": "客胜",
+    "ou": "大2.5",
+    "reason": "巴拿马强度62 vs 克罗地亚强度82；中北美队，整体实力偏下；大赛经验强，中场控制和韧性好。"
+  },
+  {
+    "id": "M48",
+    "group": "K",
+    "dateET": "2026-06-23",
+    "timeET": "22:00",
+    "home": "Colombia",
+    "away": "DR Congo",
+    "homeZh": "哥伦比亚",
+    "awayZh": "民主刚果",
+    "home_score": 2,
+    "away_score": 0,
+    "home_win": 58,
+    "draw": 25,
+    "away_win": 17,
+    "confidence": "中",
+    "pick": "主胜",
+    "ou": "小2.5",
+    "reason": "哥伦比亚强度81 vs 民主刚果强度68；南美强队，技术和个人突破强；身体能力强，但整体稳定性一般。"
+  },
+  {
+    "id": "M49",
+    "group": "B",
+    "dateET": "2026-06-24",
+    "timeET": "15:00",
+    "home": "Bosnia and Herzegovina",
+    "away": "Qatar",
+    "homeZh": "波黑",
+    "awayZh": "卡塔尔",
+    "home_score": 2,
+    "away_score": 1,
+    "home_win": 43,
+    "draw": 28,
+    "away_win": 29,
+    "confidence": "低",
+    "pick": "主胜",
+    "ou": "大2.5",
+    "reason": "波黑强度72 vs 卡塔尔强度68；欧洲队，身体和定位球有威胁；亚洲杯经验，但世界杯强度考验大。"
+  },
+  {
+    "id": "M50",
+    "group": "B",
+    "dateET": "2026-06-24",
+    "timeET": "15:00",
+    "home": "Switzerland",
+    "away": "Canada",
+    "homeZh": "瑞士",
+    "awayZh": "加拿大",
+    "home_score": 2,
+    "away_score": 1,
+    "home_win": 48,
+    "draw": 27,
+    "away_win": 25,
+    "confidence": "中",
+    "pick": "主胜",
+    "ou": "大2.5",
+    "reason": "瑞士强度80 vs 加拿大强度73；大赛稳定性高，防守纪律好；东道主加成，速度与主场优势。"
+  },
+  {
+    "id": "M51",
+    "group": "C",
+    "dateET": "2026-06-24",
+    "timeET": "18:00",
+    "home": "Morocco",
+    "away": "Haiti",
+    "homeZh": "摩洛哥",
+    "awayZh": "海地",
+    "home_score": 3,
+    "away_score": 0,
+    "home_win": 70,
+    "draw": 21,
+    "away_win": 9,
+    "confidence": "高",
+    "pick": "主胜",
+    "ou": "大2.5",
+    "reason": "摩洛哥强度82 vs 海地强度60；防守组织强，2022表现证明淘汰赛能力；小组实力偏弱，需防守反击偷分。"
+  },
+  {
+    "id": "M52",
+    "group": "C",
+    "dateET": "2026-06-24",
+    "timeET": "18:00",
+    "home": "Scotland",
+    "away": "Brazil",
+    "homeZh": "苏格兰",
+    "awayZh": "巴西",
+    "home_score": 0,
+    "away_score": 2,
+    "home_win": 17,
+    "draw": 25,
+    "away_win": 58,
+    "confidence": "中",
+    "pick": "客胜",
+    "ou": "小2.5",
+    "reason": "苏格兰强度75 vs 巴西强度88；身体对抗强，定位球可制造机会；传统强队，个人能力和进攻上限高。"
+  },
+  {
+    "id": "M53",
+    "group": "A",
+    "dateET": "2026-06-24",
+    "timeET": "21:00",
+    "home": "Czechia",
+    "away": "Mexico",
+    "homeZh": "捷克",
+    "awayZh": "墨西哥",
+    "home_score": 1,
+    "away_score": 2,
+    "home_win": 29,
+    "draw": 28,
+    "away_win": 43,
+    "confidence": "低",
+    "pick": "客胜",
+    "ou": "大2.5",
+    "reason": "捷克强度74 vs 墨西哥强度78；欧洲体系稳定，进攻爆点一般；东道主加成，主场氛围强。"
+  },
+  {
+    "id": "M54",
+    "group": "A",
+    "dateET": "2026-06-24",
+    "timeET": "21:00",
+    "home": "South Africa",
+    "away": "South Korea",
+    "homeZh": "南非",
+    "awayZh": "韩国",
+    "home_score": 0,
+    "away_score": 2,
+    "home_win": 23,
+    "draw": 27,
+    "away_win": 50,
+    "confidence": "中",
+    "pick": "客胜",
+    "ou": "小2.5",
+    "reason": "南非强度68 vs 韩国强度76；身体对抗强，但整体排名偏低；亚洲强队，转换速度快。"
+  },
+  {
+    "id": "M55",
+    "group": "E",
+    "dateET": "2026-06-25",
+    "timeET": "16:00",
+    "home": "Curaçao",
+    "away": "Côte d’Ivoire",
+    "homeZh": "库拉索",
+    "awayZh": "科特迪瓦",
+    "home_score": 0,
+    "away_score": 2,
+    "home_win": 13,
+    "draw": 23,
+    "away_win": 64,
+    "confidence": "高",
+    "pick": "客胜",
+    "ou": "小2.5",
+    "reason": "库拉索强度58 vs 科特迪瓦强度75；首次/低经验级别，防线压力大；非洲强队，身体天赋突出。"
+  },
+  {
+    "id": "M56",
+    "group": "E",
+    "dateET": "2026-06-25",
+    "timeET": "16:00",
+    "home": "Ecuador",
+    "away": "Germany",
+    "homeZh": "厄瓜多尔",
+    "awayZh": "德国",
+    "home_score": 1,
+    "away_score": 2,
+    "home_win": 25,
+    "draw": 27,
+    "away_win": 48,
+    "confidence": "中",
+    "pick": "客胜",
+    "ou": "大2.5",
+    "reason": "厄瓜多尔强度78 vs 德国强度85；南美队，年轻化和对抗强；传统强队，整体压迫与定位球优势。"
+  },
+  {
+    "id": "M57",
+    "group": "F",
+    "dateET": "2026-06-25",
+    "timeET": "19:00",
+    "home": "Japan",
+    "away": "Sweden",
+    "homeZh": "日本",
+    "awayZh": "瑞典",
+    "home_score": 2,
+    "away_score": 1,
+    "home_win": 43,
+    "draw": 28,
+    "away_win": 29,
+    "confidence": "低",
+    "pick": "主胜",
+    "ou": "大2.5",
+    "reason": "日本强度80 vs 瑞典强度76；传控与反击效率高，亚洲最稳队之一；欧洲强硬派，空中优势明显。"
+  },
+  {
+    "id": "M58",
+    "group": "F",
+    "dateET": "2026-06-25",
+    "timeET": "19:00",
+    "home": "Tunisia",
+    "away": "Netherlands",
+    "homeZh": "突尼斯",
+    "awayZh": "荷兰",
+    "home_score": 0,
+    "away_score": 2,
+    "home_win": 16,
+    "draw": 24,
+    "away_win": 60,
+    "confidence": "中",
+    "pick": "客胜",
+    "ou": "小2.5",
+    "reason": "突尼斯强度70 vs 荷兰强度84；防守韧性强，进攻效率需提升；强队底盘，防守和边路推进突出。"
+  },
+  {
+    "id": "M59",
+    "group": "D",
+    "dateET": "2026-06-25",
+    "timeET": "22:00",
+    "home": "Paraguay",
+    "away": "Australia",
+    "homeZh": "巴拉圭",
+    "awayZh": "澳大利亚",
+    "home_score": 1,
+    "away_score": 1,
+    "home_win": 41,
+    "draw": 29,
+    "away_win": 31,
+    "confidence": "低",
+    "pick": "平",
+    "ou": "小2.5",
+    "reason": "巴拉圭强度75 vs 澳大利亚强度72；南美硬度强，防守韧性好；身体和高空球强，阵地进攻一般。"
+  },
+  {
+    "id": "M60",
+    "group": "D",
+    "dateET": "2026-06-25",
+    "timeET": "22:00",
+    "home": "Turkey",
+    "away": "United States",
+    "homeZh": "土耳其",
+    "awayZh": "美国",
+    "home_score": 1,
+    "away_score": 1,
+    "home_win": 32,
+    "draw": 29,
+    "away_win": 39,
+    "confidence": "低",
+    "pick": "平",
+    "ou": "小2.5",
+    "reason": "土耳其强度77 vs 美国强度79；技术和对抗兼具，但稳定性波动；东道主加成，冲击力和节奏不错。"
+  },
+  {
+    "id": "M61",
+    "group": "I",
+    "dateET": "2026-06-26",
+    "timeET": "15:00",
+    "home": "Norway",
+    "away": "France",
+    "homeZh": "挪威",
+    "awayZh": "法国",
+    "home_score": 0,
+    "away_score": 2,
+    "home_win": 23,
+    "draw": 27,
+    "away_win": 50,
+    "confidence": "中",
+    "pick": "客胜",
+    "ou": "小2.5",
+    "reason": "挪威强度83 vs 法国强度91；锋线明星级，进攻终结强；争冠级别，阵容深度极强。"
+  },
+  {
+    "id": "M62",
+    "group": "I",
+    "dateET": "2026-06-26",
+    "timeET": "15:00",
+    "home": "Senegal",
+    "away": "Iraq",
+    "homeZh": "塞内加尔",
+    "awayZh": "伊拉克",
+    "home_score": 2,
+    "away_score": 0,
+    "home_win": 60,
+    "draw": 24,
+    "away_win": 16,
+    "confidence": "中",
+    "pick": "主胜",
+    "ou": "小2.5",
+    "reason": "塞内加尔强度79 vs 伊拉克强度65；非洲强队，身体与速度优势；亚洲队，防守硬度不错。"
+  },
+  {
+    "id": "M63",
+    "group": "H",
+    "dateET": "2026-06-26",
+    "timeET": "20:00",
+    "home": "Cape Verde",
+    "away": "Saudi Arabia",
+    "homeZh": "佛得角",
+    "awayZh": "沙特",
+    "home_score": 1,
+    "away_score": 2,
+    "home_win": 29,
+    "draw": 28,
+    "away_win": 43,
+    "confidence": "低",
+    "pick": "客胜",
+    "ou": "大2.5",
+    "reason": "佛得角强度66 vs 沙特强度70；新军黑马属性，但大赛经验不足；亚洲代表，反击速度有威胁。"
+  },
+  {
+    "id": "M64",
+    "group": "H",
+    "dateET": "2026-06-26",
+    "timeET": "20:00",
+    "home": "Uruguay",
+    "away": "Spain",
+    "homeZh": "乌拉圭",
+    "awayZh": "西班牙",
+    "home_score": 0,
+    "away_score": 2,
+    "home_win": 23,
+    "draw": 27,
+    "away_win": 50,
+    "confidence": "中",
+    "pick": "客胜",
+    "ou": "小2.5",
+    "reason": "乌拉圭强度82 vs 西班牙强度90；南美强队，强对抗和锋线效率；欧洲冠军级别，控球和压迫强。"
+  },
+  {
+    "id": "M65",
+    "group": "G",
+    "dateET": "2026-06-26",
+    "timeET": "23:00",
+    "home": "Egypt",
+    "away": "Iran",
+    "homeZh": "埃及",
+    "awayZh": "伊朗",
+    "home_score": 1,
+    "away_score": 1,
+    "home_win": 39,
+    "draw": 29,
+    "away_win": 32,
+    "confidence": "低",
+    "pick": "平",
+    "ou": "小2.5",
+    "reason": "埃及强度76 vs 伊朗强度74；非洲强队，边路和反击威胁；亚洲强队，防守纪律好。"
+  },
+  {
+    "id": "M66",
+    "group": "G",
+    "dateET": "2026-06-26",
+    "timeET": "23:00",
+    "home": "New Zealand",
+    "away": "Belgium",
+    "homeZh": "新西兰",
+    "awayZh": "比利时",
+    "home_score": 0,
+    "away_score": 3,
+    "home_win": 10,
+    "draw": 22,
+    "away_win": 68,
+    "confidence": "高",
+    "pick": "客胜",
+    "ou": "大2.5",
+    "reason": "新西兰强度62 vs 比利时强度82；大洋洲代表，整体强度偏弱；欧洲强队，进攻经验丰富。"
+  },
+  {
+    "id": "M67",
+    "group": "L",
+    "dateET": "2026-06-27",
+    "timeET": "17:00",
+    "home": "Croatia",
+    "away": "Ghana",
+    "homeZh": "克罗地亚",
+    "awayZh": "加纳",
+    "home_score": 2,
+    "away_score": 0,
+    "home_win": 55,
+    "draw": 26,
+    "away_win": 19,
+    "confidence": "中",
+    "pick": "主胜",
+    "ou": "小2.5",
+    "reason": "克罗地亚强度82 vs 加纳强度71；大赛经验强，中场控制和韧性好；非洲劲旅，速度和反击能力。"
+  },
+  {
+    "id": "M68",
+    "group": "L",
+    "dateET": "2026-06-27",
+    "timeET": "17:00",
+    "home": "Panama",
+    "away": "England",
+    "homeZh": "巴拿马",
+    "awayZh": "英格兰",
+    "home_score": 0,
+    "away_score": 4,
+    "home_win": 6,
+    "draw": 20,
+    "away_win": 74,
+    "confidence": "高",
+    "pick": "客胜",
+    "ou": "大2.5",
+    "reason": "巴拿马强度62 vs 英格兰强度88；中北美队，整体实力偏下；争冠热门，阵容身价和深度高。"
+  },
+  {
+    "id": "M69",
+    "group": "K",
+    "dateET": "2026-06-27",
+    "timeET": "19:30",
+    "home": "Colombia",
+    "away": "Portugal",
+    "homeZh": "哥伦比亚",
+    "awayZh": "葡萄牙",
+    "home_score": 1,
+    "away_score": 2,
+    "home_win": 26,
+    "draw": 28,
+    "away_win": 46,
+    "confidence": "低",
+    "pick": "客胜",
+    "ou": "大2.5",
+    "reason": "哥伦比亚强度81 vs 葡萄牙强度87；南美强队，技术和个人突破强；争冠外围强队，前场选择丰富。"
+  },
+  {
+    "id": "M70",
+    "group": "K",
+    "dateET": "2026-06-27",
+    "timeET": "19:30",
+    "home": "DR Congo",
+    "away": "Uzbekistan",
+    "homeZh": "民主刚果",
+    "awayZh": "乌兹别克斯坦",
+    "home_score": 1,
+    "away_score": 1,
+    "home_win": 32,
+    "draw": 29,
+    "away_win": 39,
+    "confidence": "低",
+    "pick": "平",
+    "ou": "小2.5",
+    "reason": "民主刚果强度68 vs 乌兹别克斯坦强度70；身体能力强，但整体稳定性一般；新军/亚洲黑马，组织纪律不错。"
+  },
+  {
+    "id": "M71",
+    "group": "J",
+    "dateET": "2026-06-27",
+    "timeET": "22:00",
+    "home": "Algeria",
+    "away": "Austria",
+    "homeZh": "阿尔及利亚",
+    "awayZh": "奥地利",
+    "home_score": 1,
+    "away_score": 2,
+    "home_win": 28,
+    "draw": 28,
+    "away_win": 44,
+    "confidence": "低",
+    "pick": "客胜",
+    "ou": "大2.5",
+    "reason": "阿尔及利亚强度73 vs 奥地利强度78；非洲强队，反击质量不低；欧洲体系队，高位压迫能力强。"
+  },
+  {
+    "id": "M72",
+    "group": "J",
+    "dateET": "2026-06-27",
+    "timeET": "22:00",
+    "home": "Jordan",
+    "away": "Argentina",
+    "homeZh": "约旦",
+    "awayZh": "阿根廷",
+    "home_score": 0,
+    "away_score": 4,
+    "home_win": 4,
+    "draw": 18,
+    "away_win": 78,
+    "confidence": "高",
+    "pick": "客胜",
+    "ou": "大2.5",
+    "reason": "约旦强度60 vs 阿根廷强度90；新军/弱势方，需低位防守争分；卫冕冠军级别，体系成熟。"
+  }
+];
+
+    const predictedTables = {
+  "A": [
+    {
+      "team": "Mexico",
+      "teamZh": "墨西哥",
+      "P": 3,
+      "W": 2,
+      "D": 1,
+      "L": 0,
+      "GF": 5,
+      "GA": 2,
+      "GD": 3,
+      "Pts": 7
+    },
+    {
+      "team": "South Korea",
+      "teamZh": "韩国",
+      "P": 3,
+      "W": 1,
+      "D": 2,
+      "L": 0,
+      "GF": 4,
+      "GA": 2,
+      "GD": 2,
+      "Pts": 5
+    },
+    {
+      "team": "Czechia",
+      "teamZh": "捷克",
+      "P": 3,
+      "W": 1,
+      "D": 1,
+      "L": 1,
+      "GF": 4,
+      "GA": 4,
+      "GD": 0,
+      "Pts": 4
+    },
+    {
+      "team": "South Africa",
+      "teamZh": "南非",
+      "P": 3,
+      "W": 0,
+      "D": 0,
+      "L": 3,
+      "GF": 1,
+      "GA": 6,
+      "GD": -5,
+      "Pts": 0
+    }
+  ],
+  "B": [
+    {
+      "team": "Switzerland",
+      "teamZh": "瑞士",
+      "P": 3,
+      "W": 3,
+      "D": 0,
+      "L": 0,
+      "GF": 6,
+      "GA": 1,
+      "GD": 5,
+      "Pts": 9
+    },
+    {
+      "team": "Canada",
+      "teamZh": "加拿大",
+      "P": 3,
+      "W": 1,
+      "D": 1,
+      "L": 1,
+      "GF": 4,
+      "GA": 4,
+      "GD": 0,
+      "Pts": 4
+    },
+    {
+      "team": "Bosnia and Herzegovina",
+      "teamZh": "波黑",
+      "P": 3,
+      "W": 1,
+      "D": 1,
+      "L": 1,
+      "GF": 3,
+      "GA": 4,
+      "GD": -1,
+      "Pts": 4
+    },
+    {
+      "team": "Qatar",
+      "teamZh": "卡塔尔",
+      "P": 3,
+      "W": 0,
+      "D": 0,
+      "L": 3,
+      "GF": 2,
+      "GA": 6,
+      "GD": -4,
+      "Pts": 0
+    }
+  ],
+  "C": [
+    {
+      "team": "Brazil",
+      "teamZh": "巴西",
+      "P": 3,
+      "W": 3,
+      "D": 0,
+      "L": 0,
+      "GF": 8,
+      "GA": 1,
+      "GD": 7,
+      "Pts": 9
+    },
+    {
+      "team": "Morocco",
+      "teamZh": "摩洛哥",
+      "P": 3,
+      "W": 2,
+      "D": 0,
+      "L": 1,
+      "GF": 6,
+      "GA": 3,
+      "GD": 3,
+      "Pts": 6
+    },
+    {
+      "team": "Scotland",
+      "teamZh": "苏格兰",
+      "P": 3,
+      "W": 1,
+      "D": 0,
+      "L": 2,
+      "GF": 3,
+      "GA": 4,
+      "GD": -1,
+      "Pts": 3
+    },
+    {
+      "team": "Haiti",
+      "teamZh": "海地",
+      "P": 3,
+      "W": 0,
+      "D": 0,
+      "L": 3,
+      "GF": 0,
+      "GA": 9,
+      "GD": -9,
+      "Pts": 0
+    }
+  ],
+  "D": [
+    {
+      "team": "United States",
+      "teamZh": "美国",
+      "P": 3,
+      "W": 2,
+      "D": 1,
+      "L": 0,
+      "GF": 5,
+      "GA": 3,
+      "GD": 2,
+      "Pts": 7
+    },
+    {
+      "team": "Turkey",
+      "teamZh": "土耳其",
+      "P": 3,
+      "W": 1,
+      "D": 2,
+      "L": 0,
+      "GF": 4,
+      "GA": 3,
+      "GD": 1,
+      "Pts": 5
+    },
+    {
+      "team": "Paraguay",
+      "teamZh": "巴拉圭",
+      "P": 3,
+      "W": 0,
+      "D": 2,
+      "L": 1,
+      "GF": 3,
+      "GA": 4,
+      "GD": -1,
+      "Pts": 2
+    },
+    {
+      "team": "Australia",
+      "teamZh": "澳大利亚",
+      "P": 3,
+      "W": 0,
+      "D": 1,
+      "L": 2,
+      "GF": 3,
+      "GA": 5,
+      "GD": -2,
+      "Pts": 1
+    }
+  ],
+  "E": [
+    {
+      "team": "Germany",
+      "teamZh": "德国",
+      "P": 3,
+      "W": 3,
+      "D": 0,
+      "L": 0,
+      "GF": 8,
+      "GA": 1,
+      "GD": 7,
+      "Pts": 9
+    },
+    {
+      "team": "Ecuador",
+      "teamZh": "厄瓜多尔",
+      "P": 3,
+      "W": 1,
+      "D": 1,
+      "L": 1,
+      "GF": 5,
+      "GA": 3,
+      "GD": 2,
+      "Pts": 4
+    },
+    {
+      "team": "Côte d’Ivoire",
+      "teamZh": "科特迪瓦",
+      "P": 3,
+      "W": 1,
+      "D": 1,
+      "L": 1,
+      "GF": 3,
+      "GA": 3,
+      "GD": 0,
+      "Pts": 4
+    },
+    {
+      "team": "Curaçao",
+      "teamZh": "库拉索",
+      "P": 3,
+      "W": 0,
+      "D": 0,
+      "L": 3,
+      "GF": 0,
+      "GA": 9,
+      "GD": -9,
+      "Pts": 0
+    }
+  ],
+  "F": [
+    {
+      "team": "Netherlands",
+      "teamZh": "荷兰",
+      "P": 3,
+      "W": 3,
+      "D": 0,
+      "L": 0,
+      "GF": 6,
+      "GA": 1,
+      "GD": 5,
+      "Pts": 9
+    },
+    {
+      "team": "Japan",
+      "teamZh": "日本",
+      "P": 3,
+      "W": 2,
+      "D": 0,
+      "L": 1,
+      "GF": 5,
+      "GA": 3,
+      "GD": 2,
+      "Pts": 6
+    },
+    {
+      "team": "Sweden",
+      "teamZh": "瑞典",
+      "P": 3,
+      "W": 1,
+      "D": 0,
+      "L": 2,
+      "GF": 3,
+      "GA": 5,
+      "GD": -2,
+      "Pts": 3
+    },
+    {
+      "team": "Tunisia",
+      "teamZh": "突尼斯",
+      "P": 3,
+      "W": 0,
+      "D": 0,
+      "L": 3,
+      "GF": 1,
+      "GA": 6,
+      "GD": -5,
+      "Pts": 0
+    }
+  ],
+  "G": [
+    {
+      "team": "Belgium",
+      "teamZh": "比利时",
+      "P": 3,
+      "W": 3,
+      "D": 0,
+      "L": 0,
+      "GF": 7,
+      "GA": 1,
+      "GD": 6,
+      "Pts": 9
+    },
+    {
+      "team": "Egypt",
+      "teamZh": "埃及",
+      "P": 3,
+      "W": 1,
+      "D": 1,
+      "L": 1,
+      "GF": 4,
+      "GA": 3,
+      "GD": 1,
+      "Pts": 4
+    },
+    {
+      "team": "Iran",
+      "teamZh": "伊朗",
+      "P": 3,
+      "W": 1,
+      "D": 1,
+      "L": 1,
+      "GF": 3,
+      "GA": 3,
+      "GD": 0,
+      "Pts": 4
+    },
+    {
+      "team": "New Zealand",
+      "teamZh": "新西兰",
+      "P": 3,
+      "W": 0,
+      "D": 0,
+      "L": 3,
+      "GF": 0,
+      "GA": 7,
+      "GD": -7,
+      "Pts": 0
+    }
+  ],
+  "H": [
+    {
+      "team": "Spain",
+      "teamZh": "西班牙",
+      "P": 3,
+      "W": 3,
+      "D": 0,
+      "L": 0,
+      "GF": 8,
+      "GA": 0,
+      "GD": 8,
+      "Pts": 9
+    },
+    {
+      "team": "Uruguay",
+      "teamZh": "乌拉圭",
+      "P": 3,
+      "W": 2,
+      "D": 0,
+      "L": 1,
+      "GF": 4,
+      "GA": 2,
+      "GD": 2,
+      "Pts": 6
+    },
+    {
+      "team": "Saudi Arabia",
+      "teamZh": "沙特",
+      "P": 3,
+      "W": 1,
+      "D": 0,
+      "L": 2,
+      "GF": 2,
+      "GA": 6,
+      "GD": -4,
+      "Pts": 3
+    },
+    {
+      "team": "Cape Verde",
+      "teamZh": "佛得角",
+      "P": 3,
+      "W": 0,
+      "D": 0,
+      "L": 3,
+      "GF": 1,
+      "GA": 7,
+      "GD": -6,
+      "Pts": 0
+    }
+  ],
+  "I": [
+    {
+      "team": "France",
+      "teamZh": "法国",
+      "P": 3,
+      "W": 3,
+      "D": 0,
+      "L": 0,
+      "GF": 8,
+      "GA": 0,
+      "GD": 8,
+      "Pts": 9
+    },
+    {
+      "team": "Norway",
+      "teamZh": "挪威",
+      "P": 3,
+      "W": 2,
+      "D": 0,
+      "L": 1,
+      "GF": 5,
+      "GA": 3,
+      "GD": 2,
+      "Pts": 6
+    },
+    {
+      "team": "Senegal",
+      "teamZh": "塞内加尔",
+      "P": 3,
+      "W": 1,
+      "D": 0,
+      "L": 2,
+      "GF": 3,
+      "GA": 4,
+      "GD": -1,
+      "Pts": 3
+    },
+    {
+      "team": "Iraq",
+      "teamZh": "伊拉克",
+      "P": 3,
+      "W": 0,
+      "D": 0,
+      "L": 3,
+      "GF": 0,
+      "GA": 9,
+      "GD": -9,
+      "Pts": 0
+    }
+  ],
+  "J": [
+    {
+      "team": "Argentina",
+      "teamZh": "阿根廷",
+      "P": 3,
+      "W": 3,
+      "D": 0,
+      "L": 0,
+      "GF": 8,
+      "GA": 0,
+      "GD": 8,
+      "Pts": 9
+    },
+    {
+      "team": "Austria",
+      "teamZh": "奥地利",
+      "P": 3,
+      "W": 2,
+      "D": 0,
+      "L": 1,
+      "GF": 5,
+      "GA": 3,
+      "GD": 2,
+      "Pts": 6
+    },
+    {
+      "team": "Algeria",
+      "teamZh": "阿尔及利亚",
+      "P": 3,
+      "W": 1,
+      "D": 0,
+      "L": 2,
+      "GF": 3,
+      "GA": 4,
+      "GD": -1,
+      "Pts": 3
+    },
+    {
+      "team": "Jordan",
+      "teamZh": "约旦",
+      "P": 3,
+      "W": 0,
+      "D": 0,
+      "L": 3,
+      "GF": 0,
+      "GA": 9,
+      "GD": -9,
+      "Pts": 0
+    }
+  ],
+  "K": [
+    {
+      "team": "Portugal",
+      "teamZh": "葡萄牙",
+      "P": 3,
+      "W": 3,
+      "D": 0,
+      "L": 0,
+      "GF": 7,
+      "GA": 1,
+      "GD": 6,
+      "Pts": 9
+    },
+    {
+      "team": "Colombia",
+      "teamZh": "哥伦比亚",
+      "P": 3,
+      "W": 2,
+      "D": 0,
+      "L": 1,
+      "GF": 5,
+      "GA": 2,
+      "GD": 3,
+      "Pts": 6
+    },
+    {
+      "team": "Uzbekistan",
+      "teamZh": "乌兹别克斯坦",
+      "P": 3,
+      "W": 0,
+      "D": 1,
+      "L": 2,
+      "GF": 1,
+      "GA": 5,
+      "GD": -4,
+      "Pts": 1
+    },
+    {
+      "team": "DR Congo",
+      "teamZh": "民主刚果",
+      "P": 3,
+      "W": 0,
+      "D": 1,
+      "L": 2,
+      "GF": 1,
+      "GA": 6,
+      "GD": -5,
+      "Pts": 1
+    }
+  ],
+  "L": [
+    {
+      "team": "England",
+      "teamZh": "英格兰",
+      "P": 3,
+      "W": 3,
+      "D": 0,
+      "L": 0,
+      "GF": 8,
+      "GA": 1,
+      "GD": 7,
+      "Pts": 9
+    },
+    {
+      "team": "Croatia",
+      "teamZh": "克罗地亚",
+      "P": 3,
+      "W": 2,
+      "D": 0,
+      "L": 1,
+      "GF": 6,
+      "GA": 2,
+      "GD": 4,
+      "Pts": 6
+    },
+    {
+      "team": "Ghana",
+      "teamZh": "加纳",
+      "P": 3,
+      "W": 1,
+      "D": 0,
+      "L": 2,
+      "GF": 2,
+      "GA": 4,
+      "GD": -2,
+      "Pts": 3
+    },
+    {
+      "team": "Panama",
+      "teamZh": "巴拿马",
+      "P": 3,
+      "W": 0,
+      "D": 0,
+      "L": 3,
+      "GF": 0,
+      "GA": 9,
+      "GD": -9,
+      "Pts": 0
+    }
+  ]
+};
+
+    let state = {
+      view: "matches",
+      group: "ALL",
+      q: ""
+    };
+
+    const storageKey = "wc26_group_predictor_feedback_v1";
+
+    function getFeedback() {
+      try { return JSON.parse(localStorage.getItem(storageKey) || "{}"); }
+      catch(e) { return {}; }
+    }
+
+    function setFeedback(obj) {
+      localStorage.setItem(storageKey, JSON.stringify(obj, null, 2));
+    }
+
+    function formatTaipei(m) {
+      const d = new Date(`${m.dateET}T${m.timeET}:00-04:00`);
+      return new Intl.DateTimeFormat("zh-CN", {
+        timeZone:"Asia/Taipei",
+        month:"2-digit",
+        day:"2-digit",
+        weekday:"short",
+        hour:"2-digit",
+        minute:"2-digit",
+        hour12:false
+      }).format(d);
+    }
+
+    function formatET(m) {
+      return `${m.dateET.slice(5)} ${m.timeET} ET`;
+    }
+
+    function visibleMatches() {
+      const q = state.q.trim().toLowerCase();
+      return matches.filter(m => {
+        const groupOk = state.group === "ALL" || m.group === state.group;
+        const text = [m.home,m.away,m.homeZh,m.awayZh,m.group].join(" ").toLowerCase();
+        return groupOk && (!q || text.includes(q));
+      });
+    }
+
+    function matchCard(m) {
+      const fb = getFeedback()[m.id] || {};
+      const confClass = `confidence-${m.confidence}`;
+      return `
+        <article class="match" id="${m.id}">
+          <div class="match-top">
+            <span class="badge">小组 ${m.group} · ${m.id}</span>
+            <span class="badge ${confClass}">信心：${m.confidence}</span>
+          </div>
+          <div class="badge">美东 ${formatET(m)} · 台北/北京 ${formatTaipei(m)}</div>
+          <div class="teams">
+            <div class="team">
+              <strong>${m.homeZh}</strong>
+              <span>${m.home}</span>
+            </div>
+            <div class="score">${m.home_score} - ${m.away_score}</div>
+            <div class="team away">
+              <strong>${m.awayZh}</strong>
+              <span>${m.away}</span>
+            </div>
+          </div>
+          <div class="prob">
+            <div>主胜<b>${m.home_win}%</b></div>
+            <div>平局<b>${m.draw}%</b></div>
+            <div>客胜<b>${m.away_win}%</b></div>
+          </div>
+          <div class="tags">
+            <span class="tag">方向：${m.pick}</span>
+            <span class="tag">进球：${m.ou}</span>
+            <span class="tag">预测总进球：${m.home_score + m.away_score}</span>
+          </div>
+          <p class="reason">${m.reason}</p>
+          <details>
+            <summary>填写实际比分 / 伤停情报 / 你的反馈</summary>
+            <div class="feedback" data-id="${m.id}">
+              <input placeholder="实际主队进球" type="number" min="0" value="${fb.actualHome ?? ""}" data-field="actualHome" />
+              <input placeholder="实际客队进球" type="number" min="0" value="${fb.actualAway ?? ""}" data-field="actualAway" />
+              <textarea placeholder="补充数据：比如首发变化、伤停、赔率变化、临场天气、你认为预测不准的原因……" data-field="note">${fb.note ?? ""}</textarea>
+              <button class="save" onclick="saveOne('${m.id}')">保存这场反馈</button>
+            </div>
+          </details>
+        </article>
+      `;
+    }
+
+    function renderMatches() {
+      const list = visibleMatches();
+      document.getElementById("matchCount").textContent = `${list.length} / ${matches.length} 场`;
+      const grid = document.getElementById("matchesGrid");
+      grid.innerHTML = list.length ? list.map(matchCard).join("") : `<div class="empty">没有匹配的比赛</div>`;
+    }
+
+    function renderTables() {
+      const wrap = document.getElementById("tablesWrap");
+      wrap.innerHTML = Object.keys(predictedTables).map(g => {
+        const rows = predictedTables[g].map((s, idx) => `
+          <tr class="${idx===0?'rank1':idx===1?'rank2':idx===2?'third':''}">
+            <td>${idx+1}. ${s.teamZh}</td>
+            <td>${s.P}</td><td>${s.W}</td><td>${s.D}</td><td>${s.L}</td>
+            <td>${s.GF}</td><td>${s.GA}</td><td>${s.GD>0?'+':''}${s.GD}</td><td><b>${s.Pts}</b></td>
+          </tr>
+        `).join("");
+        return `
+          <div class="section-title"><h2>${g}组</h2><small>预测排名</small></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>球队</th><th>赛</th><th>胜</th><th>平</th><th>负</th><th>进</th><th>失</th><th>净</th><th>分</th></tr></thead>
+              <tbody>${rows}</tbody>
+            </table>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function setView(view) {
+      state.view = view;
+      document.querySelectorAll(".tab").forEach(btn => btn.classList.toggle("active", btn.dataset.view === view));
+      document.getElementById("matchesView").style.display = view === "matches" ? "" : "none";
+      document.getElementById("tablesView").style.display = view === "tables" ? "" : "none";
+      document.getElementById("modelView").style.display = view === "model" ? "" : "none";
+      if (view === "tables") renderTables();
+    }
+
+    function saveOne(id) {
+      const box = document.querySelector(`.feedback[data-id="${id}"]`);
+      const data = getFeedback();
+      data[id] = {};
+      box.querySelectorAll("[data-field]").forEach(el => {
+        data[id][el.dataset.field] = el.value;
+      });
+      data[id].updatedAt = new Date().toISOString();
+      const m = matches.find(x => x.id === id);
+      data[id].match = `${m.homeZh} vs ${m.awayZh}`;
+      data[id].prediction = `${m.home_score}-${m.away_score}`;
+      setFeedback(data);
+      alert("已保存反馈");
+    }
+
+    function exportFeedback() {
+      const payload = {
+        exportedAt: new Date().toISOString(),
+        source: "2026世界杯小组赛预测器",
+        feedback: getFeedback()
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], {type:"application/json"});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "worldcup_2026_feedback.json";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    async function copyPredictions() {
+      const payload = {
+        exportedAt: new Date().toISOString(),
+        matches,
+        predictedTables
+      };
+      await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
+      alert("已复制全部预测 JSON");
+    }
+
+    document.getElementById("viewTabs").addEventListener("click", e => {
+      const btn = e.target.closest(".tab");
+      if (btn) setView(btn.dataset.view);
+    });
+    document.getElementById("groupFilter").addEventListener("change", e => {
+      state.group = e.target.value;
+      renderMatches();
+    });
+    document.getElementById("searchInput").addEventListener("input", e => {
+      state.q = e.target.value;
+      renderMatches();
+    });
+    document.getElementById("clearBtn").addEventListener("click", () => {
+      state.group = "ALL";
+      state.q = "";
+      document.getElementById("groupFilter").value = "ALL";
+      document.getElementById("searchInput").value = "";
+      renderMatches();
+    });
+    document.getElementById("exportBtn").addEventListener("click", exportFeedback);
+    document.getElementById("copyBtn").addEventListener("click", copyPredictions);
+
+    renderMatches();
+  </script>
+</body>
+</html>
